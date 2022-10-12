@@ -86,17 +86,42 @@ func (c *Cache) Get(co string) (s interface{}, err error) {
 		sess.Expiration = expiration
 		sess.LastAccess = lastAccess
 
-		return sess.C, nil
+		return sess.S, nil
 	}
 
 	return nil, nil
 }
 
 func (c *Cache) Remove(co string) (isFound bool, err error) {
+	c.Lock.Lock()
+	defer c.Lock.Unlock()
+
+	s := c.Pool.Get()
+
+	if s != nil && s.(Session).C != co {
+		c.Pool.Put(s)
+	}
+
+	for sess := range c.Elements {
+		if sess == co {
+			delete(c.Elements, sess)
+			return true, nil
+		}
+	}
+
 	return false, nil
 }
 
 func (c *Cache) Flush() error {
+	c.Lock.Lock()
+	defer c.Lock.Unlock()
+
+	for k := range c.Elements {
+		delete(c.Elements, k)
+	}
+
+	c.Pool = &sync.Pool{}
+
 	return nil
 }
 
