@@ -5,6 +5,7 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/ferretcode-hosting/fc-session-cache/api"
 	"github.com/ferretcode-hosting/fc-session-cache/cache"
 )
 
@@ -23,6 +24,14 @@ func main() {
 		Pool: &sync.Pool{},
 	}
 
+	sessionApi := &api.Api{
+		Cache: sessionCache,		
+	}
+
+	fmt.Println("Cache started.")
+
+	sessionApi.NewApi()
+	
 	sessionCache.Cleaner.Clean(&sessionCache)
 	runtime.SetFinalizer(sessionCache, stopCleaner)
 }
