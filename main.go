@@ -10,29 +10,29 @@ import (
 )
 
 func main() {
-	fmt.Println("Starting cache...")	
+	fmt.Println("Starting cache...")
 
 	sessionCache := cache.Cache{
 		Expiration: cache.EXPIRATION,
-		Elements: make(map[string]cache.Session, cache.CAP),
-		Cap: cache.CAP,
-		Lock: new(sync.RWMutex),
+		Elements:   make(map[string]cache.Session, cache.CAP),
+		Cap:        cache.CAP,
+		Lock:       new(sync.RWMutex),
 		Cleaner: &cache.Cleaner{
 			Interval: cache.EXPIRATION,
-			Stop: make(chan bool),
+			Stop:     make(chan bool),
 		},
 		Pool: &sync.Pool{},
 	}
 
 	sessionApi := &api.Api{
-		Cache: sessionCache,		
+		Cache: sessionCache,
 	}
 
 	fmt.Println("Cache started.")
 
 	sessionApi.NewApi()
-	
-	sessionCache.Cleaner.Clean(&sessionCache)
+
+	go sessionCache.Cleaner.Clean(&sessionCache)
 	runtime.SetFinalizer(sessionCache, stopCleaner)
 }
 
