@@ -1,25 +1,32 @@
 package main
 
 import (
+	"fmt"
+	"runtime"
 	"sync"
-	"time"
+
+	"github.com/ferretcode-hosting/fc-session-cache/cache"
 )
 
-type FcCache struct {
-	expiration time.Duration
-	elements   map[string]string
-	cap        int64
-	size       int64
-	lock       *sync.RWMutex
-	pool       *sync.Pool
-	cleaner    *Cleaner
+func main() {
+	fmt.Println("Starting cache...")	
+
+	sessionCache := cache.Cache{
+		Expiration: cache.EXPIRATION,
+		Elements: make(map[string]cache.Session, cache.CAP),
+		Cap: cache.CAP,
+		Lock: new(sync.RWMutex),
+		Cleaner: &cache.Cleaner{
+			Interval: cache.EXPIRATION,
+			Stop: make(chan bool),
+		},
+		Pool: &sync.Pool{},
+	}
+
+	sessionCache.Cleaner.Clean(&sessionCache)
+	runtime.SetFinalizer(sessionCache, stopCleaner)
 }
 
-type Cleaner struct {
-	interval time.Duration
-	stop     chan bool
-}
-
-func (c *FcCache) Get(k string) (v string, err error) {
-	return "", nil
+func stopCleaner(c *cache.Cache) {
+	c.Cleaner.Stop <- true
 }
