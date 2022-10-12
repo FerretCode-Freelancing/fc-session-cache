@@ -1,12 +1,13 @@
 package api
 
 import (
-	"crypto/subtle"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
+	"github.com/99designs/basicauth-go"
 	"github.com/ferretcode-hosting/fc-session-cache/cache"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -21,6 +22,13 @@ func (a *Api) NewApi() {
 
 	r.Use(middleware.Logger)
 	r.Use(middleware.RealIP)
+	
+	username := os.Getenv("FC_SESSION_CACHE_USERNAME")
+	password := os.Getenv("FC_SESSION_CACHE_PASSWORD")
+
+	r.Use(basicauth.New("fc-hosting", map[string][]string{
+		username: { password },
+	}))
 
 	r.Post("/put", func (w http.ResponseWriter, r *http.Request) {
 		a.Put(w, r)
@@ -29,34 +37,6 @@ func (a *Api) NewApi() {
 	fmt.Println("API started.")
 
 	http.ListenAndServe(":3000", r)
-}
-
-func (a *Api) Auth(realm string, creds map[string]string) func(h http.Handler) http.Handler {
-	return func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			user, pass, ok := r.BasicAuth()
-
-			if !ok {
-				basicAuthFailed(w, realm)
-
-				return
-			}
-
-			credPass, credUserOk := creds[user]
-			if !credUserOk || subtle.ConstantTimeCompare([]byte(pass), []byte(credPass)) != 1 {
-				basicAuthFailed(w, realm)	
-
-				return
-			}
-
-			h.ServeHTTP(w, r)
-		})
-	}
-}
-
-func basicAuthFailed(w http.ResponseWriter, realm string) {
-	w.Header().Add("WWW-Authenticate", fmt.Sprintf("Basic realm=%s", realm))
-	w.WriteHeader(http.StatusUnauthorized)
 }
 
 type PutRequest struct {

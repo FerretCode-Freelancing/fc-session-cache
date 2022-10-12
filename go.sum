@@ -1,2 +1,4 @@
+github.com/99designs/basicauth-go v0.0.0-20160802081356-2a93ba0f464d h1:j6oB/WPCigdOkxtuPl1VSIiLpy7Mdsu6phQffbF19Ng=
+github.com/99designs/basicauth-go v0.0.0-20160802081356-2a93ba0f464d/go.mod h1:3cARGAK9CfW3HoxCy1a0G4TKrdiKke8ftOMEOHyySYs=
 github.com/go-chi/chi/v5 v5.0.7 h1:rDTPXLDHGATaeHvVlLcR4Qe0zftYethFucbjVQ1PxU8=
 github.com/go-chi/chi/v5 v5.0.7/go.mod h1:DslCQbL2OYiznFReuXYUmQ2hGd1aDpCnlMNITLSKoi8=
