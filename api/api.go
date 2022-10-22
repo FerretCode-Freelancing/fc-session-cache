@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/99designs/basicauth-go"
 	"github.com/ferretcode-hosting/fc-session-cache/cache"
@@ -23,13 +24,15 @@ func (a *Api) NewApi() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.RealIP)
 	
-	username := os.Getenv("FC_SESSION_CACHE_USERNAME")
-	password := os.Getenv("FC_SESSION_CACHE_PASSWORD")
+	username := strings.TrimSuffix(os.Getenv("FC_SESSION_CACHE_USERNAME"), "\n")
+	password := strings.TrimSuffix(os.Getenv("FC_SESSION_CACHE_PASSWORD"), "\n")
 
-	r.Use(basicauth.New("fc-hosting", map[string][]string{
-		username: { password },
-	}))
-
+	if username != "" && password != "" {
+		r.Use(basicauth.New("fc-hosting", map[string][]string{
+			username: { password },
+		}))
+	}
+	
 	r.Post("/put", func (w http.ResponseWriter, r *http.Request) {
 		a.Put(w, r)
 	})
