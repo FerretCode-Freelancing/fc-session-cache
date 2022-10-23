@@ -24,8 +24,8 @@ func (a *Api) NewApi() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.RealIP)
 	
-	username := strings.TrimSuffix(os.Getenv("FC_SESSION_CACHE_USERNAME"), "\n")
-	password := strings.TrimSuffix(os.Getenv("FC_SESSION_CACHE_PASSWORD"), "\n")
+	username := strings.Trim(os.Getenv("FC_SESSION_CACHE_USERNAME"), "\n")
+	password := strings.Trim(os.Getenv("FC_SESSION_CACHE_PASSWORD"), "\n")
 
 	if username != "" && password != "" {
 		r.Use(basicauth.New("fc-hosting", map[string][]string{
@@ -70,7 +70,7 @@ func (a *Api) ProcessBody(w http.ResponseWriter, r *http.Request, s interface{})
 
 type SessionObject struct {
 	C string `json:"cookie"`
-	S map[string]string `json:"session"`
+	S map[string]interface{} `json:"session"`
 }
 func (a *Api) Put(w http.ResponseWriter, r *http.Request) error {
 	pr := &SessionObject{}
@@ -78,13 +78,17 @@ func (a *Api) Put(w http.ResponseWriter, r *http.Request) error {
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		fmt.Println(err)
 		return err
 	}
+
+	fmt.Printf("putting:\n %s\n %s", pr.C, pr.S)
 
 	res := a.Cache.Put(pr.C, pr.S)
 
 	if res != nil {
 		http.Error(w, res.Error(), http.StatusInternalServerError)
+		fmt.Println(err)
 		return res
 	}
 
@@ -128,6 +132,8 @@ func (a *Api) Get(w http.ResponseWriter, r *http.Request) error {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	fmt.Printf("session was fetched; returning:\n %s", string(bytes))
 
 	w.Write(bytes)
 

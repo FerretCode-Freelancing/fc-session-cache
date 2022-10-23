@@ -22,10 +22,10 @@ type Cache struct {
 }
 
 type Session struct {
-	C string // session cookie
-	S interface{} //session object
-	Expiration int64
-	LastAccess int64
+	C string `json:"cookie"` // session cookie
+	S interface{} `json:"session"` //session object
+	Expiration int64 `json:"expires"`
+	LastAccess int64 `json:"last_access"`
 }
 
 type Cleaner struct {
@@ -34,8 +34,8 @@ type Cleaner struct {
 }
 
 func (c *Cache) Put(co string, s interface{}) error {
-	expiration := time.Now().Add(EXPIRATION).UnixNano()
-	lastAccess := time.Now().UnixNano()
+	expiration := time.Now().Add(EXPIRATION).UnixMilli()
+	lastAccess := time.Now().UnixMilli()
 
 	if c.Size + 1 > c.Cap {
 		if _, err := c.Remove(c.LRU().C); err != nil {
@@ -72,12 +72,12 @@ func (c *Cache) Get(co string) (s interface{}, err error) {
 
 	if sess, ok := session.(Session); ok {
 		if sess.C == co {
-			return sess.S, nil
+			return sess, nil
 		}
 	}
 
-	expiration := time.Now().Add(EXPIRATION).UnixNano()
-	lastAccess := time.Now().UnixNano()
+	expiration := time.Now().Add(EXPIRATION).UnixMilli()
+	lastAccess := time.Now().UnixMilli()
 
 	c.Lock.RLock()
 	defer c.Lock.RUnlock()
@@ -86,7 +86,7 @@ func (c *Cache) Get(co string) (s interface{}, err error) {
 		sess.Expiration = expiration
 		sess.LastAccess = lastAccess
 
-		return sess.S, nil
+		return sess, nil
 	}
 
 	return nil, nil
@@ -126,7 +126,7 @@ func (c *Cache) Flush() error {
 }
 
 func (c *Cache) CleanExpired() {
-	now := time.Now().UnixNano()
+	now := time.Now().UnixMilli()
 	
 	c.Lock.Lock()
 	defer c.Lock.Unlock()
