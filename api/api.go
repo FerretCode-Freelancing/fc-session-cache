@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -103,15 +104,14 @@ type GetRequest struct {
 	Cookie string `json:"cookie"`
 }
 func (a *Api) Get(w http.ResponseWriter, r *http.Request) error {
-	gr := &GetRequest{}
-	err := a.ProcessBody(w, r, gr)
+	cookie := r.URL.Query().Get("sid")
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return err
+	if cookie == "" {
+		http.Error(w, "You need to add `sid` to your query parameters!", http.StatusBadRequest)
+		return errors.New("You need to add `sid` to your query parameters!")
 	}
 
-	res, err := a.Cache.Get(gr.Cookie)
+	res, err := a.Cache.Get(cookie)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
