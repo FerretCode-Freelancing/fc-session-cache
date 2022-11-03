@@ -116,6 +116,8 @@ func (a *Api) Get(w http.ResponseWriter, r *http.Request) error {
 
 	cookie = unescaped
 
+	fmt.Println(cookie)
+
 	if cookie == "" {
 		http.Error(w, "You need to add `sid` to your query parameters!", http.StatusBadRequest)
 		return errors.New("you need to add `sid` to your query parameters")
