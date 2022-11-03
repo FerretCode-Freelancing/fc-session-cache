@@ -114,7 +114,7 @@ func (a *Api) Get(w http.ResponseWriter, r *http.Request) error {
 		return errors.New("you need to add `sid` to your query parameters")
 	}
 
-	cookie = unescaped
+	cookie = strings.Trim(unescaped, "\n")
 
 	fmt.Println(cookie)
 
