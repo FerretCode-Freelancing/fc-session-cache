@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -106,9 +107,18 @@ type GetRequest struct {
 func (a *Api) Get(w http.ResponseWriter, r *http.Request) error {
 	cookie := r.URL.Query().Get("sid")
 
+	unescaped, err := url.QueryUnescape(cookie)
+
+	if err != nil {
+		http.Error(w, "The provided session id might be invalid!", http.StatusBadRequest)
+		return errors.New("you need to add `sid` to your query parameters")
+	}
+
+	cookie = unescaped
+
 	if cookie == "" {
 		http.Error(w, "You need to add `sid` to your query parameters!", http.StatusBadRequest)
-		return errors.New("You need to add `sid` to your query parameters!")
+		return errors.New("you need to add `sid` to your query parameters")
 	}
 
 	res, err := a.Cache.Get(cookie)
