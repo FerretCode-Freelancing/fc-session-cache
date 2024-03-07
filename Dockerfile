@@ -1,4 +1,4 @@
-FROM golang:1.19
+FROM golang:bookworm
 
 WORKDIR /usr/src/cache
 
