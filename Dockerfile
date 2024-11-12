@@ -1,4 +1,4 @@
-FROM golang:1.19
+FROM golang:1.23.2
 
 WORKDIR /usr/src/cache
 
